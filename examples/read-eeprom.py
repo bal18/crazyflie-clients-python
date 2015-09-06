@@ -26,8 +26,8 @@
 #  MA  02110-1301, USA.
 
 """
-Simple example that connects to the first Crazyflie found, logs the Stabilizer
-and prints it to the console. After 10s the application disconnects and exits.
+Simple example that connects to the first Crazyflie found, looks for
+EEPROM memories and lists its contents.
 """
 
 import sys
@@ -38,16 +38,16 @@ from threading import Timer
 sys.path.append("../lib")
 import cflib.crtp  # noqa
 from cfclient.utils.logconfigreader import LogConfig  # noqa
+from cflib.crazyflie.mem import MemoryElement
 from cflib.crazyflie import Crazyflie  # noqa
 
 # Only output errors from the logging framework
 logging.basicConfig(level=logging.ERROR)
 
 
-class LoggingExample:
+class EEPROMExample:
     """
-    Simple logging example class that logs the Stabilizer from a supplied
-    link uri and disconnects after 5s.
+    Simple example listing the EEPROMs found and lists its contents.
     """
 
     def __init__(self, link_uri):
@@ -75,32 +75,22 @@ class LoggingExample:
         has been connected and the TOCs have been downloaded."""
         print("Connected to %s" % link_uri)
 
-        # The definition of the logconfig can be made before connecting
-        self._lg_stab = LogConfig(name="Stabilizer", period_in_ms=10)
-        self._lg_stab.add_variable("stabilizer.roll", "float")
-        self._lg_stab.add_variable("stabilizer.pitch", "float")
-        self._lg_stab.add_variable("stabilizer.yaw", "float")
+        mems = self._cf.mem.get_mems(MemoryElement.TYPE_I2C)
+        print("Found {} EEPOM(s)".format(len(mems)))
+        for m in mems:
+            print("Updating id={}".format(m.id))
+            m.update(self._data_updated)
 
-        # Adding the configuration cannot be done until a Crazyflie is
-        # connected, since we need to check that the variables we
-        # would like to log are in the TOC.
-        try:
-            self._cf.log.add_config(self._lg_stab)
-            # This callback will receive the data
-            self._lg_stab.data_received_cb.add_callback(self._stab_log_data)
-            # This callback will be called on errors
-            self._lg_stab.error_cb.add_callback(self._stab_log_error)
-            # Start the logging
-            self._lg_stab.start()
-        except KeyError as e:
-            print("Could not start log configuration,"
-                  "{} not found in TOC".format(str(e)))
-        except AttributeError:
-            print("Could not add Stabilizer log config, bad configuration.")
+    def _data_updated(self, mem):
+        print("Updated id={}".format(mem.id))
+        print("\tType      : {}".format(mem.type))
+        print("\tSize      : {}".format(mem.size))
+        print("\tValid     : {}".format(mem.valid))
+        print("\tElements  : ")
+        for key in mem.elements:
+            print("\t\t{}={}".format(key, mem.elements[key]))
 
-        # Start a timer to disconnect in 10s
-        t = Timer(5, self._cf.close_link)
-        t.start()
+        self._cf.close_link()
 
     def _stab_log_error(self, logconf, msg):
         """Callback from the log API when an error occurs"""
@@ -138,12 +128,15 @@ if __name__ == '__main__':
         print(i[0])
 
     if len(available) > 0:
-        le = LoggingExample(available[0][0])
+        le = EEPROMExample(available[0][0])
     else:
         print("No Crazyflies found, cannot run example")
 
     # The Crazyflie lib doesn't contain anything to keep the application alive,
     # so this is where your application should do something. In our case we
     # are just waiting until we are disconnected.
-    while le.is_connected:
-        time.sleep(1)
+    try:
+        while le.is_connected:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        sys.exit(1)
