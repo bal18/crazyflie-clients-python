@@ -38,7 +38,7 @@ from threading import Timer
 sys.path.append("../lib")
 import cflib.crtp  # noqa
 from cfclient.utils.logconfigreader import LogConfig  # noqa
-from cflib.crazyflie.mem import MemoryElement
+from cflib.crazyflie.mem import MemoryElement, OWElement
 from cflib.crazyflie import Crazyflie  # noqa
 
 # Only output errors from the logging framework
@@ -75,25 +75,42 @@ class EEPROMExample:
         has been connected and the TOCs have been downloaded."""
         print("Connected to %s" % link_uri)
 
-        mems = self._cf.mem.get_mems(MemoryElement.TYPE_I2C)
-        print("Found {} EEPOM(s)".format(len(mems)))
-        self._mems_to_update = len(mems)
-        for m in mems:
-            print("Updating id={}".format(m.id))
-            m.update(self._data_updated)
+        mems = self._cf.mem.get_mems(MemoryElement.TYPE_1W)
+        print("Found {} 1-wire memories".format(len(mems)))
+        if len(mems) > 0:
+            print("Writing test configuration to"
+                  " memory {}".format(mems[0].id))
+
+            mems[0].vid = 0xBC
+            mems[0].pid = 0xFF
+
+            board_name_id = OWElement.element_mapping[1]
+            board_rev_id = OWElement.element_mapping[2]
+
+            mems[0].elements[board_name_id] = "Test board"
+            mems[0].elements[board_rev_id] = "A"
+
+            mems[0].write_data(self._data_written)
+
+    def _data_written(self, mem, addr):
+            print("Data written, reading back...")
+            mem.update(self._data_updated)
 
     def _data_updated(self, mem):
         print("Updated id={}".format(mem.id))
         print("\tType      : {}".format(mem.type))
         print("\tSize      : {}".format(mem.size))
         print("\tValid     : {}".format(mem.valid))
+        print("\tName      : {}".format(mem.name))
+        print("\tVID       : 0x{:02X}".format(mem.vid))
+        print("\tPID       : 0x{:02X}".format(mem.pid))
+        print("\tPins      : 0x{:02X}".format(mem.pins))
         print("\tElements  : ")
+
         for key in mem.elements:
             print("\t\t{}={}".format(key, mem.elements[key]))
 
-        self._mems_to_update -= 1
-        if self._mems_to_update == 0:
-            self._cf.close_link()
+        self._cf.close_link()
 
     def _stab_log_error(self, logconf, msg):
         """Callback from the log API when an error occurs"""
@@ -121,8 +138,11 @@ class EEPROMExample:
 
 
 if __name__ == '__main__':
+    print("This example will not work with the BLE version of the nRF51"
+          " firmware (flashed on production units). See https://github.com"
+          "/bitcraze/crazyflie-clients-python/issues/166")
     # Initialize the low-level drivers (don't list the debug drivers)
-    cflib.crtp.init_drivers(enable_debug_driver=False)
+    cflib.crtp.init_drivers(enable_debug_driver=True)
     # Scan for Crazyflies and use the first one found
     print("Scanning interfaces for Crazyflies...")
     available = cflib.crtp.scan_interfaces()

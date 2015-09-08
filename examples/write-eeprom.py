@@ -27,7 +27,7 @@
 
 """
 Simple example that connects to the first Crazyflie found, looks for
-EEPROM memories and lists its contents.
+EEPROM memories and writes the default values in it.
 """
 
 import sys
@@ -47,7 +47,8 @@ logging.basicConfig(level=logging.ERROR)
 
 class EEPROMExample:
     """
-    Simple example listing the EEPROMs found and lists its contents.
+    Simple example listing the EEPROMs found and writes the default values
+    in it.
     """
 
     def __init__(self, link_uri):
@@ -77,10 +78,23 @@ class EEPROMExample:
 
         mems = self._cf.mem.get_mems(MemoryElement.TYPE_I2C)
         print("Found {} EEPOM(s)".format(len(mems)))
-        self._mems_to_update = len(mems)
-        for m in mems:
-            print("Updating id={}".format(m.id))
-            m.update(self._data_updated)
+        if len(mems) > 0:
+            print("Writing default configuration to"
+                  " memory {}".format(mems[0].id))
+
+            elems = mems[0].elements
+            elems["version"] = 1
+            elems["pitch_trim"] = 0.0
+            elems["roll_trim"] = 0.0
+            elems["radio_channel"] = 80
+            elems["radio_speed"] = 0
+            elems["radio_address"] = 0xE7E7E7E7E7
+
+            mems[0].write_data(self._data_written)
+
+    def _data_written(self, mem, addr):
+            print("Data written, reading back...")
+            mem.update(self._data_updated)
 
     def _data_updated(self, mem):
         print("Updated id={}".format(mem.id))
@@ -91,9 +105,7 @@ class EEPROMExample:
         for key in mem.elements:
             print("\t\t{}={}".format(key, mem.elements[key]))
 
-        self._mems_to_update -= 1
-        if self._mems_to_update == 0:
-            self._cf.close_link()
+        self._cf.close_link()
 
     def _stab_log_error(self, logconf, msg):
         """Callback from the log API when an error occurs"""
@@ -122,7 +134,7 @@ class EEPROMExample:
 
 if __name__ == '__main__':
     # Initialize the low-level drivers (don't list the debug drivers)
-    cflib.crtp.init_drivers(enable_debug_driver=False)
+    cflib.crtp.init_drivers(enable_debug_driver=True)
     # Scan for Crazyflies and use the first one found
     print("Scanning interfaces for Crazyflies...")
     available = cflib.crtp.scan_interfaces()
