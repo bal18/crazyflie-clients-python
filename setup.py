@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from distutils.core import setup
 import glob
@@ -15,7 +15,7 @@ try:
 except OSError:
     raise Exception("Cannot run git: Git is required to generate packages!")
 
-VERSION = output.strip()
+VERSION = output.strip().decode("UTF-8")
 
 toplevel_data_files = ['README.md', 'LICENSE.txt']
 
