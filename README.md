@@ -129,6 +129,13 @@ they might or might not affected of this.
     ```
     python2.7 bin/cfclient
     ```
+### Python and dependencies problems 
+  
+If python updates and build missing dependencies are causing issues try Anaconda (http://continuum.io/downloads).
+It will re-point python3 to python. You may need update pip as the python version may have relinked to an older version
+of python (https://pip.pypa.io/en/latest/installing/)
+
+Then re-apply all steps after the brew update of python; which did not work for me.
 
 ## Linux
 
