@@ -1,37 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-#     ||          ____  _ __
-#  +------+      / __ )(_) /_______________ _____  ___
-#  | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
-#  +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
-#   ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
-#
-#  Copyright (C) 2014 Bitcraze AB
-#
-#  Crazyflie Nano Quadcopter Client
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA  02110-1301, USA.
-
-"""
-Simple scripted escape
-
-https://forum.bitcraze.io/viewtopic.php?t=883
-
-test script try at your own risk !!!!
-"""
 
 import time, sys
 from threading import Thread
@@ -166,48 +132,10 @@ class Escape:
         self._cf.commander.send_setpoint(0, 0, 0, 0)
         time.sleep(0.1)
 
-        # #                               (Roll, Pitch, Yaw,     Thrust)
-        # self._cf.commander.send_setpoint(0, 0, 0, 0.75*64768)
-        self._cf.commander.send_setpoint(0, 0, 0, 0.3 * 64768)
+        #                                (Roll, Pitch, Yaw,     Thrust)
+        self._cf.commander.send_setpoint(0, 0, 0, 0.75 * 64768)
         time.sleep(0.2)
 
-        self._cf.commander.send_setpoint(0, 0, 0, 0.6 * 64768)
-        time.sleep(0.5)
-
-        self._cf.commander.send_setpoint(0, 0, 0, 0.75 * 64768)
-        time.sleep(0.5)
-
-        # self._cf.commander.send_setpoint(0, 0, 0, 0.7 * 64768)
-        # time.sleep(0.5)
-
-        #self._cf.commander.send_setpoint(0, 0, 0, 0)
-        #
-        #self.cf.param.set_value("flightmode.althold", "True")
-
-        # try:
-        while KeyboardInterrupt:
-            time.sleep(1)
-        # except KeyboardInterrupt:
-        #     close_link()
-        #
-        # self._cf.commander.send_setpoint(0, 5, 0, 0.75*64768)
-        # # Wait for Crazyflie to reach some altitude, could be replaced by a sleep and needs a timeout!
-        # while self._alt < (self._start_alt + 1):
-        #     pass
-
-        print "0, Going down!"
-
-        # self._cf.commander.send_setpoint(0, 5, 0, 0.3*64768)
-        self._cf.commander.send_setpoint(0, 5, 0, 0.3 * 64768)
-        time.sleep(0.3)
-
-        self._cf.commander.send_setpoint(0, 0, 0, 0.55 * 64768)
-        # Wait for Crazyflie to come back to 0, could be replaced by a sleep and needs a timeout!
-        while self._alt > (self._start_alt + 0.2):
-            pass
-
-        self._cf.commander.send_setpoint(0, 0, 0, 0.3 * 64768)
-        time.sleep(0.1)
 
         self._cf.commander.send_setpoint(0, 0, 0, 0)
 
@@ -221,10 +149,7 @@ if __name__ == '__main__':
     # Initialize the low-level drivers (don't list the debug drivers)
     cflib.crtp.init_drivers(enable_debug_driver=False)
 
-    # To quickly connect a single Crazyflie
-    # le = Escape("radio://0/45/2M")
 
-    # Or, to scan for Crazyflies and use the first one found
     print "Scanning interfaces for Crazyflies..."
     available = cflib.crtp.scan_interfaces()
     print "Crazyflies found:"
