@@ -13,9 +13,11 @@ cflib.crtp.init_drivers(enable_debug_driver=False)
 
 # test script try at your own risk !!!!
 
-print "Scanning interfaces for Crazyflies..."
+print("Scanning interfaces for Crazyflies...")
+
 available = cflib.crtp.scan_interfaces()
-print "Crazyflies found:"
+
+print("Crazyflies found:")
 for i in available:
     print i[0]
 
@@ -24,18 +26,18 @@ if len(available) > 0:
     cf = Crazyflie()
 
     def handle_connected(link_uri):
-        print "Connected to %s" % link_uri
+        print("Connected to %s" % link_uri)
 
-        print "Sending thrust 45000"
+        print("Sending thrust 45000")
         cf.commander.send_setpoint(0, 0, 0, 45000)
         time.sleep(0.75)
 
-        print "Stopping thrust; hovering"
+        print("Stopping thrust; hovering")
         cf.commander.send_setpoint(0, 0, 0, 0)
         cf.param.set_value("flightmode.althold", "True")
 
     def close_link():
-        print 'Closing'
+        print("Closing")
         cf.commander.send_setpoint(0, 0, 0, 0)
         time.sleep(0.1)
         cf.close_link()
@@ -44,7 +46,7 @@ if len(available) > 0:
     cf.connected.add_callback(handle_connected)
 
     link_uri = available[0][0]
-    print "Connecting to %s" % link_uri
+    print("Connecting to %s" % link_uri)
 
     # Try to connect to the Crazyflie
     cf.open_link(link_uri)
@@ -60,4 +62,4 @@ if len(available) > 0:
         is_connected = False
         close_link()
 else:
-    print "No Crazyflies found, cannot run example"
+    print("No Crazyflies found, cannot run example")

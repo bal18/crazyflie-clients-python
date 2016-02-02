@@ -70,13 +70,13 @@ class Escape:
 
         self._cf.open_link(link_uri)
 
-        print "Connecting to %s" % link_uri
+        print("Connecting to %s" % link_uri)
 
     def _connected(self, link_uri):
         """ This callback is called form the Crazyflie API when a Crazyflie
         has been connected and the TOCs have been downloaded."""
 
-        print "Connected to %s" % link_uri
+        print("Connected to %s" % link_uri)
 
         # The definition of the logconfig can be made before connecting
         self._lg_alt = LogConfig(name="altitude", period_in_ms=10)
@@ -111,10 +111,10 @@ class Escape:
             # Start the logging
             self._lg_stab.start()
         except KeyError as e:
-            print "Could not start log configuration," \
-                  "{} not found in TOC".format(str(e))
+            print("Could not start log configuration," \
+                  "{} not found in TOC".format(str(e)))
         except AttributeError:
-            print "Could not add Stabilizer log config, bad configuration."
+            print("Could not add Stabilizer log config, bad configuration.")
 
 
         # Start a separate thread to do the motor test.
@@ -123,7 +123,7 @@ class Escape:
 
     def _alt_log_error(self, logconf, msg):
         """Callback from the log API when an error occurs"""
-        print "Error when logging %s: %s" % (logconf.name, msg)
+        print("Error when logging %s: %s" % (logconf.name, msg))
 
     def _alt_log_data(self, timestamp, data, logconf):
         """Callback froma the log API when data arrives"""
@@ -133,29 +133,29 @@ class Escape:
                 self._takeoff = True
             else:
                 self._alt = data['baro.asl']
-        print "altitude {} at takeoff".format(self._alt - self._start_alt)
+        print("altitude {} at takeoff".format(self._alt - self._start_alt))
 
     def _stab_log_error(self, logconf, msg):
         """Callback from the log API when an error occurs"""
-        print "Error when logging %s: %s" % (logconf.name, msg)
+        print("Error when logging %s: %s" % (logconf.name, msg))
 
     def _stab_log_data(self, timestamp, data, logconf):
         """Callback froma the log API when data arrives"""
-        print "[%d][%s]: %s" % (timestamp, logconf.name, data)
+        print("[%d][%s]: %s" % (timestamp, logconf.name, data))
 
     def _connection_failed(self, link_uri, msg):
         """Callback when connection initial connection fails (i.e no Crazyflie
         at the speficied address)"""
-        print "Connection to %s failed: %s" % (link_uri, msg)
+        print("Connection to %s failed: %s" % (link_uri, msg))
 
     def _connection_lost(self, link_uri, msg):
         """Callback when disconnected after a connection has been made (i.e
         Crazyflie moves out of range)"""
-        print "Connection to %s lost: %s" % (link_uri, msg)
+        print("Connection to %s lost: %s" % (link_uri, msg))
 
     def _disconnected(self, link_uri):
         """Callback when the Crazyflie is disconnected (called in all cases)"""
-        print "Disconnected from %s" % link_uri
+        print("Disconnected from %s" % link_uri)
 
     def _do_escape(self):
 
@@ -185,8 +185,8 @@ class Escape:
         #self.cf.param.set_value("flightmode.althold", "True")
 
         # try:
-        while KeyboardInterrupt:
-            time.sleep(1)
+        # while KeyboardInterrupt:
+        #     time.sleep(1)
         # except KeyboardInterrupt:
         #     close_link()
         #
@@ -195,7 +195,7 @@ class Escape:
         # while self._alt < (self._start_alt + 1):
         #     pass
 
-        print "0, Going down!"
+        print("0, Going down!")
 
         # self._cf.commander.send_setpoint(0, 5, 0, 0.3*64768)
         self._cf.commander.send_setpoint(0, 5, 0, 0.3 * 64768)
@@ -225,13 +225,13 @@ if __name__ == '__main__':
     # le = Escape("radio://0/45/2M")
 
     # Or, to scan for Crazyflies and use the first one found
-    print "Scanning interfaces for Crazyflies..."
+    print("Scanning interfaces for Crazyflies...")
     available = cflib.crtp.scan_interfaces()
-    print "Crazyflies found:"
+    print("Crazyflies found:")
     for i in available:
-        print i[0]
+        print(i[0])
 
     if len(available) > 0:
         le = Escape(available[0][0])
     else:
-        print "No Crazyflies found, cannot run example"
+        print("No Crazyflies found, cannot run example")

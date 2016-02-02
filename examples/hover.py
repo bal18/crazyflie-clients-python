@@ -5,8 +5,9 @@ import time
 
 sys.path.append("../lib")
 
-from cflib.crazyflie import Crazyflie
-from cflib import crtp
+import cflib  # noqa
+from cflib.crazyflie import Crazyflie  # noqa
+# logging.basicConfig(level=logging.ERROR)
 
 # test script try at your own risk !!!!
 class Hover:
@@ -22,9 +23,11 @@ class Hover:
 
       logging.info("Initializing drivers.")
       # Init drivers
-      crtp.init_drivers()
-      availableLinks = crtp.scan_interfaces()
-      logging.info("Available links: %s"%(availableLinks))
+      cflib.crtp.init_drivers(enable_debug_driver=False)
+
+      availableLinks = cflib.crtp.scan_interfaces()
+      # availableLinks = crtp.scan_interfaces()
+      # logging.info("Available links: %s"%(availableLinks))
       logging.info("Initializing Crazyflie.")
       self.m_CrazyFlie = Crazyflie(ro_cache="cachero", rw_cache="cacherw")
 
