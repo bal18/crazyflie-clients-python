@@ -31,14 +31,14 @@ read/write the configuration block in the Crazyflie flash.
 """
 
 import struct
-import sys
 from cflib.bootloader import Bootloader
 
 import logging
 
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import Qt, pyqtSlot, pyqtSignal, QThread, SIGNAL
+from PyQt4 import QtGui, uic
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, QThread
 
+import cfclient
 from cfclient.utils.config import Config
 from functools import reduce
 
@@ -47,8 +47,8 @@ __all__ = ['Cf1ConfigDialog']
 
 logger = logging.getLogger(__name__)
 
-service_dialog_class = uic.loadUiType(sys.path[0] +
-                                      "/cfclient/ui/dialogs/cf1config.ui")[0]
+service_dialog_class = uic.loadUiType(cfclient.module_path +
+                                      "/ui/dialogs/cf1config.ui")[0]
 
 
 class UIState:
@@ -223,13 +223,13 @@ class CrazyloadThread(QThread):
             self.failed_signal.emit("{}".format(e))
 
     def checksum256(self, st):
-        return reduce(lambda x, y: x + y, list(map(ord, st))) % 256
+        return reduce(lambda x, y: x + y, list(st)) % 256
 
     def writeConfigAction(self, channel, speed, rollTrim, pitchTrim):
         data = (0x00, channel, speed, pitchTrim, rollTrim)
         image = struct.pack("<BBBff", *data)
         # Adding some magic:
-        image = "0xBC" + image
+        image = bytearray("0xBC".encode('ISO-8859-1')) + image
         image += struct.pack("B", 256 - self.checksum256(image))
 
         self._bl.write_cf1_config(image)
@@ -238,7 +238,7 @@ class CrazyloadThread(QThread):
         self.statusChanged.emit("Reading config block...", 0)
         data = self._bl.read_cf1_config()
         if (data is not None):
-            if data[0:4] == "0xBC":
+            if data[0:4] == bytearray("0xBC".encode('ISO-8859-1')):
                 # Skip 0xBC and version at the beginning
                 [channel,
                  speed,
